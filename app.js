@@ -12,9 +12,21 @@ canvas.setAttribute('height', y);
 var ctx = canvas.getContext("2d");
 ctx.fillStyle = "#FF0000";
 
-document.addEventListener("click", function(e) {
+function drawPointOnScreen(e) {
     var rect = canvas.getBoundingClientRect();
     var x = e.clientX - rect.left;
     var y = e.clientY - rect.top;
     ctx.fillRect(x, y, 3, 3);
+}
+
+canvas.addEventListener("click", function(e) {
+    drawPointOnScreen(e);
+});
+
+canvas.addEventListener("mousedown", function(e) {    
+    canvas.addEventListener("mousemove", drawPointOnScreen);
+});
+
+canvas.addEventListener("mouseup", function(e) {    
+    canvas.removeEventListener("mousemove", drawPointOnScreen);
 });
