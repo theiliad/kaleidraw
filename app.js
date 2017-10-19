@@ -14,6 +14,30 @@ canvas.setAttribute('height', screenHeight);
 var ctx = canvas.getContext("2d");
 ctx.fillStyle = "#FF0000";
 
+var socket = io('https://kaleidraw-signal-server-zuuvrwadwf.now.sh');
+var signal = new SimpleSignalClient(socket);
+var peers = [];
+
+signal.on('ready', function (ids) {
+    ids.forEach((id) => signal.connect(id));
+});
+signal.on('request', (request) => request.accept());
+signal.on('peer', (peer) => {
+    peer.on('data', (data) => {
+        var oldColor = ctx.fillStyle;
+    
+        data = JSON.parse(data);
+        ctx.fillStyle = data.color;
+        drawRadialPointsOnScreen(data.radius, data.theta)
+        ctx.fillStyle = oldColor; // reset color
+    })
+    peers.push(peer);
+});
+
+function sendToPeers(data) {
+    peers.forEach((peer) => peer.send(JSON.stringify(data)));
+}
+
 function drawPointOnScreen(x, y) {
     // var rect = canvas.getBoundingClientRect();
     // var x = e.clientX - rect.left;
@@ -23,7 +47,7 @@ function drawPointOnScreen(x, y) {
     ctx.fillRect(x, y, 2, 2);
 }
 
-function drawRadialPointOnScreen(e) {
+function drawNewPoints (e) {
     var rect = canvas.getBoundingClientRect();
     var x = e.clientX - rect.left;
     var y = e.clientY - rect.top;
@@ -36,9 +60,21 @@ function drawRadialPointOnScreen(e) {
 
     var radius = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
     var theta = Math.atan((deltaY / deltaX)) * 180 / 3.14159265;
-    var dozent = theta / ((12.0 / 36.0) * 30);
+  
+    drawRadialPointsOnScreen(radius, theta)
+  
+    sendToPeers({
+        color: ctx.fillStyle,
+        radius: radius,
+        theta: theta
+    });
+}
 
-    drawPointOnScreen(x, y);
+function drawRadialPointsOnScreen (radius, theta) {
+    var dozent = theta / ((12.0 / 36.0) * 30);
+  
+    var centerX = (screenWidth / 2);
+    var centerY = (screenHeight / 2);
 
     for (var i = 0; i < 36; i++) {
         if (i != dozent) {
@@ -52,13 +88,13 @@ function drawRadialPointOnScreen(e) {
 }
 
 canvas.addEventListener("click", function(e) {
-    drawRadialPointOnScreen(e);
+    drawNewPoints(e);
 });
 
 canvas.addEventListener("mousedown", function(e) {    
-    canvas.addEventListener("mousemove", drawRadialPointOnScreen);
+    canvas.addEventListener("mousemove", drawNewPoints);
 });
 
 canvas.addEventListener("mouseup", function(e) {    
-    canvas.removeEventListener("mousemove", drawRadialPointOnScreen);
+    canvas.removeEventListener("mousemove", drawNewPoints);
 });
