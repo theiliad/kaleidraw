@@ -32,18 +32,10 @@ signal.on('peer', (peer) => {
         ctx.fillStyle = oldColor; // reset color
     })
     peers.push(peer);
-    var index = peers.length - 1
-    peer.on('close', () => {
-      peers.splice(index, 1)
-    })
-    peer.on('error', (err) => {
-      console.error(err)
-      peers.splice(index, 1)
-    })
 });
 
 function sendToPeers(data) {
-    peers.forEach((peer) => peer.write(JSON.stringify(data)));
+    peers.forEach((peer) => peer.send(JSON.stringify(data)));
 }
 
 function drawPointOnScreen(x, y) {
