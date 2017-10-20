@@ -43,7 +43,7 @@ signal.on('peer', (peer) => {
 });
 
 function sendToPeers(data) {
-    peers.forEach((peer) => peer.send(JSON.stringify(data)));
+    peers.forEach((peer) => peer.write(JSON.stringify(data)));
 }
 
 function drawPointOnScreen(x, y) {
