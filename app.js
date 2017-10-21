@@ -1,3 +1,7 @@
+require("./app.css");
+const io = require("./dependencies/socket.io.js");
+const SimpleSignalClient = require("./dependencies/simple-signal-client.min.js");
+
 var w = window,
 d = document,
 e = d.documentElement,
