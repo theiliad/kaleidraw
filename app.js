@@ -42,6 +42,8 @@ signal.on('peer', (peer) => {
     })
 });
 
+
+
 function sendToPeers(data) {
     peers.forEach((peer) => peer.write(JSON.stringify(data)));
 }
@@ -51,11 +53,21 @@ function drawLineOnScreen(x1, y1, x2, y2) {
     // var x = e.clientX - rect.left;
     // var y = e.clientY - rect.top;
     // ctx.fillRect(x, y, 3, 3);
-
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
+  
+    drawPool.push([x1, y1, x2, y2])
 }
+
+var drawPool = []
+function draw () {
+    drawPool.forEach((line) => {
+        ctx.moveTo(line[0], line[1]);
+        ctx.lineTo(line[2], line[3]);
+        ctx.stroke();           
+    });
+    drawPool = []; //empty the pool
+    requestAnimationFrame(draw);
+}
+requestAnimationFrame(draw);
 
 function drawNewPoints (e) {
     var rect = canvas.getBoundingClientRect();
