@@ -12,7 +12,7 @@ canvas.setAttribute('width', screenWidth);
 canvas.setAttribute('height', screenHeight);
 
 var ctx = canvas.getContext("2d");
-ctx.fillStyle = "#FF0000";
+ctx.strokeStyle = "#FF0000";
 
 var socket = io('https://kaleidraw-signal-server-zuuvrwadwf.now.sh');
 var signal = new SimpleSignalClient(socket);
@@ -24,12 +24,12 @@ signal.on('ready', function (ids) {
 signal.on('request', (request) => request.accept());
 signal.on('peer', (peer) => {
     peer.on('data', (data) => {
-        var oldColor = ctx.fillStyle;
+        var oldColor = ctx.strokeStyle;
     
         data = JSON.parse(data);
-        ctx.fillStyle = data.color;
-        drawRadialPointsOnScreen(data.radius, data.theta)
-        ctx.fillStyle = oldColor; // reset color
+        ctx.strokeStyle = data.color;
+        drawRadialPointsOnScreen(peer.id, data.radius, data.theta)
+        ctx.strokeStyle = oldColor; // reset color
     })
     peers.push(peer);
     var index = peers.length - 1
@@ -46,13 +46,15 @@ function sendToPeers(data) {
     peers.forEach((peer) => peer.write(JSON.stringify(data)));
 }
 
-function drawPointOnScreen(x, y) {
+function drawLineOnScreen(x1, y1, x2, y2) {
     // var rect = canvas.getBoundingClientRect();
     // var x = e.clientX - rect.left;
     // var y = e.clientY - rect.top;
     // ctx.fillRect(x, y, 3, 3);
 
-    ctx.fillRect(x, y, 2, 2);
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
 }
 
 function drawNewPoints (e) {
@@ -69,20 +71,24 @@ function drawNewPoints (e) {
     var radius = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
     var theta = Math.atan((deltaY / deltaX)) * 180 / 3.14159265;
   
-    drawRadialPointsOnScreen(radius, theta)
+    drawRadialPointsOnScreen(null, radius, theta)
   
     sendToPeers({
-        color: ctx.fillStyle,
+        color: ctx.strokeStyle,
         radius: radius,
         theta: theta
     });
 }
 
-function drawRadialPointsOnScreen (radius, theta) {
+
+var lastPoints = {};
+function drawRadialPointsOnScreen (setID, radius, theta) {
     var dozent = theta / ((12.0 / 36.0) * 30);
   
     var centerX = (screenWidth / 2);
     var centerY = (screenHeight / 2);
+  
+    lastPoints[setID] = lastPoints[setID] || [];
 
     for (var i = 0; i < 36; i++) {
         if (i != dozent) {
@@ -90,7 +96,9 @@ function drawRadialPointsOnScreen (radius, theta) {
             var x = centerX + radius * (Math.cos(newTheta * PI / 180));
             var y = centerY + radius * (Math.sin(newTheta * PI / 180));
 
-            drawPointOnScreen(x, y);
+            lastPoints[setID][i] = lastPoints[setID][i] || [x,y];
+            drawLineOnScreen(lastPoints[setID][i][0], lastPoints[setID][i][1], x, y);
+            lastPoints[setID][i] = [x, y];
         }
     }
 }
@@ -100,6 +108,7 @@ canvas.addEventListener("click", function(e) {
 });
 
 canvas.addEventListener("mousedown", function(e) {    
+    lastPoints[null] = []; //clear line connections
     canvas.addEventListener("mousemove", drawNewPoints);
 });
 
