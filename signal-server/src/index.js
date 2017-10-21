@@ -20,4 +20,7 @@ signal.on('disconnect', function (socket) {
   delete rooms[socket.id]
   if (!ids[room]) return // leaving a nonexistent room (bad client)
   ids[room].splice(ids[room].indexOf(socket.id), 1)
+  if (ids[room].lengtj === 0) {
+    delete ids[room]
+  }
 })
