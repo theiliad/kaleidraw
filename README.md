@@ -4,4 +4,4 @@
 **Future Goals:**
 - Bezier curve lines drawn from free form drawing
 - Save feature
-- Online collaborative painting
+- Online collaborative painting (in process)
