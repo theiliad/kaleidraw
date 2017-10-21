@@ -14,8 +14,22 @@ canvas.setAttribute('height', screenHeight);
 var ctx = canvas.getContext("2d");
 ctx.strokeStyle = "#FF0000";
 
-var socket = io('https://kaleidraw-signal-server-zuuvrwadwf.now.sh');
-var signal = new SimpleSignalClient(socket);
+// todo: move to another module (duh)
+var util = {};
+util.getParameterByName = function (name) {
+  var url = window.location.href
+  name = name.replace(/[[\]]/g, '\\$&')
+  var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)')
+  var results = regex.exec(url)
+  if (!results) return null
+  if (!results[2]) return ''
+  return decodeURIComponent(results[2].replace(/\+/g, ' '))
+}
+
+var room = util.getParameterByName('room') || '1'
+
+var socket = io('https://kaleidraw-signal-server-bglcynwuea.now.sh');
+var signal = new SimpleSignalClient(socket, {room: room});
 var peers = [];
 
 signal.on('ready', function (ids) {
