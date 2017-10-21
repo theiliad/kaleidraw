@@ -5,7 +5,6 @@ var signal = require('simple-signal-server')(io)
 var ids = {}
 var rooms = {}
 signal.on('discover', function (request) {
-  console.log(request.metadata)
   var room = request.metadata.room
   if (!room) return // need to specify a room (bad client)
   if (!ids[room]) {
