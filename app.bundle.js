@@ -154,8 +154,6 @@ signal.on('peer', peer => {
     });
 });
 
-alert("Hello 2");
-
 function sendToPeers(data) {
     peers.forEach(peer => peer.write(JSON.stringify(data)));
 }
