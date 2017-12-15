@@ -54,7 +54,7 @@ signal.on('peer', (peer) => {
     })
 });
 
-alert("Hello");
+alert("Hello 2");
 
 
 function sendToPeers(data) {
